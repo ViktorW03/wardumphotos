@@ -1,0 +1,22 @@
+{
+  "name": "wardumphotos",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "node scripts/render-check.mjs",
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "serve": "python3 -m http.server 8080",
+    "dist": "npm run build && ./scripts/build-dist.sh"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "devDependencies": {
+    "jsdom": "^30.0.0",
+    "typescript": "^7.0.2",
+    "wrangler": "^4.114.0"
+  }
+}

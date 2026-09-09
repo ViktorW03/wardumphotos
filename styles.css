@@ -1,0 +1,335 @@
+:root {
+  --bg: #ffffff;
+  --fg: #14161a;
+  --muted: #6d7178;
+  --rule: #e7e8ea;
+  --tile-bg: #f4f5f6;
+
+  --gap: 16px;
+  --page: 1040px;   /* the site never runs wider than this */
+  --pad: clamp(1.25rem, 4vw, 2.5rem);
+  --portrait: clamp(120px, 22vw, 168px);   /* width of the picture of you */
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: ui-sans-serif, -apple-system, "Segoe UI", Inter, Helvetica, Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+body.is-locked {
+  overflow: hidden;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px solid #c4c7cb;
+  padding-bottom: 1px;
+  transition: border-color 0.15s ease;
+}
+
+a:hover {
+  border-color: var(--fg);
+}
+
+:focus-visible {
+  outline: 2px solid #2f6fed;
+  outline-offset: 3px;
+}
+
+.skip {
+  position: absolute;
+  left: -9999px;
+}
+
+.skip:focus {
+  left: var(--pad);
+  top: 1rem;
+  z-index: 10;
+  background: var(--fg);
+  color: var(--bg);
+  padding: 0.6rem 1rem;
+  border: 0;
+}
+
+/* The page is a fixed-width column centred in the viewport — it never runs
+   edge to edge, however wide the screen gets. */
+.page {
+  max-width: var(--page);
+  margin: 0 auto;
+  padding: 0 var(--pad);
+}
+
+/* --- Profile header ------------------------------------------------------ */
+
+.profile {
+  padding: clamp(2.5rem, 7vw, 4.5rem) 0 clamp(2rem, 5vw, 3rem);
+  text-align: center;
+}
+
+/* Shown whole — sized by width only, so the photo keeps its own aspect ratio
+   and nothing is cropped away. */
+.profile__avatar img {
+  width: var(--portrait);
+  height: auto;
+  margin: 0 auto;
+  background: var(--tile-bg);
+}
+
+.profile__name {
+  margin: 1.1rem 0 0;
+  font-size: clamp(1.5rem, 4vw, 1.9rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+.profile__tagline {
+  margin: 0.2rem 0 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.profile__bio {
+  margin: 0.9rem auto 0;
+  max-width: 34rem;
+}
+
+.profile__bio p {
+  margin: 0 0 0.5rem;
+}
+
+.profile__bio p:last-child {
+  margin-bottom: 0;
+  color: var(--muted);
+}
+
+.booking {
+  margin: 0.9rem 0 0;
+  font-size: 1.05rem;
+}
+
+/* Contact sits with the bio rather than in a footer — it is part of who you
+   are, and it stays in view instead of waiting at the bottom of the scroll. */
+.links {
+  margin: 0.75rem 0 0;
+  color: var(--muted);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.95rem;
+}
+
+/* An underline running beneath an icon looks like a mistake, so these links
+   signal hover with colour instead. */
+.links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border-bottom: 0;
+  padding-bottom: 0;
+  transition: color 0.15s ease;
+}
+
+.links a:hover {
+  color: var(--fg);
+}
+
+.links svg {
+  width: 1.15em;
+  height: 1.15em;
+  flex: 0 0 auto;
+}
+
+/* --- Gallery ------------------------------------------------------------- */
+
+.gallery + .gallery {
+  margin-top: clamp(2.5rem, 6vw, 4rem);
+}
+
+.gallery__title {
+  margin: 0 0 1.1rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+}
+
+/* Justified rows. Widths and heights are set per tile by gallery.ts: every photo
+   in a row shares a height and the row fills the width exactly, so photos read
+   left to right in content.ts order with nothing cropped and no gaps left over.
+   The `gap` here is what the layout code measures — keep it in px. */
+.grid {
+  gap: var(--gap);
+}
+
+.grid__row {
+  display: flex;
+  gap: var(--gap);
+  margin-bottom: var(--gap);
+}
+
+.grid__row:last-child {
+  margin-bottom: 0;
+}
+
+.tile {
+  display: block;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 3px;
+  overflow: hidden;
+  background: var(--tile-bg);
+  cursor: zoom-in;
+  flex: 0 0 auto;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.tile img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: opacity 0.2s ease;
+}
+
+/* Narrow screens: one photo per row at its natural height. */
+.grid--single .tile {
+  width: 100%;
+  height: auto;
+  margin-bottom: var(--gap);
+}
+
+.grid--single .tile:last-child {
+  margin-bottom: 0;
+}
+
+.grid--single .tile img {
+  height: auto;
+}
+
+@media (hover: hover) {
+  .tile:hover img {
+    opacity: 0.86;
+  }
+}
+
+/* --- Lightbox ------------------------------------------------------------ */
+/* Stays dark regardless of the page theme — a bright surround shifts how you
+   read a photograph's own tones. */
+
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: none;
+  place-items: center;
+  background: rgb(16 16 18 / 0.97);
+  padding: clamp(0.75rem, 4vw, 3rem);
+}
+
+.lightbox[open] {
+  display: grid;
+}
+
+.lightbox__stage {
+  display: grid;
+  place-items: center;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.lightbox__stage img {
+  max-width: 100%;
+  max-height: 88svh;
+  width: auto;
+  object-fit: contain;
+}
+
+.lightbox__close,
+.lightbox__nav {
+  position: absolute;
+  z-index: 1;
+  border: 0;
+  background: none;
+  color: #f2f2f2;
+  cursor: pointer;
+  line-height: 1;
+  opacity: 0.6;
+  transition: opacity 0.15s ease;
+}
+
+.lightbox__close:hover,
+.lightbox__nav:hover {
+  opacity: 1;
+}
+
+.lightbox__close {
+  top: 0.5rem;
+  right: 0.9rem;
+  font-size: 2.6rem;
+  padding: 0.25rem 0.5rem;
+}
+
+.lightbox__nav {
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 3.2rem;
+  padding: 0.5rem 0.9rem;
+}
+
+.lightbox__nav--prev {
+  left: 0;
+}
+
+.lightbox__nav--next {
+  right: 0;
+}
+
+.lightbox__counter {
+  position: absolute;
+  bottom: 0.9rem;
+  left: 50%;
+  transform: translateX(-50%);
+  margin: 0;
+  color: #9a9da2;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+}
+
+/* Touch devices navigate by swiping; the arrows only crowd the frame. */
+@media (hover: none) {
+  .lightbox__nav {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition-duration: 0.01ms !important;
+  }
+}
