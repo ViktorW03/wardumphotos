@@ -10,14 +10,15 @@
     <meta property="og:title" content="Wardum — Photography" />
     <meta property="og:description" content="Photography by Viktor Wardum. Based in Reykjavik." />
     <meta property="og:type" content="website" />
-    <meta property="og:image" content="images/thumb/DSC00233.jpg" />
+    <meta property="og:url" content="https://wardumphotos.is/" />
+    <meta property="og:image" content="https://wardumphotos.is/images/thumb/DSC00233.jpg" />
 
     <link rel="stylesheet" href="styles.css" />
     <script type="module" src="js/gallery.js"></script>
   </head>
 
   <body>
-    <a class="skip" href="#work">Skip to photographs</a>
+    <a class="skip" href="#photographs">Skip to photographs</a>
 
     <div class="page">
       <header class="profile">
@@ -33,9 +34,15 @@
         </p>
       </header>
 
-      <main>
+      <nav class="series-index" data-index aria-label="Series"></nav>
+
+      <main id="photographs">
         <div data-galleries></div>
       </main>
+
+      <footer class="footer">
+        <p>&copy; 2026 Viktor Wardum</p>
+      </footer>
     </div>
 
     <div class="lightbox" data-lightbox role="dialog" aria-modal="true" aria-label="Photograph">

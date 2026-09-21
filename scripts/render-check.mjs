@@ -52,9 +52,20 @@ check(
   TEXT.bookingLine ? 'set' : 'omitted, line removed',
 );
 
-console.log('\nempty portraits gallery');
-check('no portraits section', !document.querySelector('#portraits'));
-check('no heading while only one gallery has photos', document.querySelectorAll('.gallery__title').length === 0);
+console.log('\nseries');
+const sections = [...document.querySelectorAll('.gallery')];
+check('one section per series', sections.length === GALLERIES.length, sections.map((s) => s.id).join(', '));
+check('every section has its heading', GALLERIES.every((g) => document.getElementById(g.id)?.querySelector('.gallery__title')?.textContent === g.title));
+const links = [...document.querySelectorAll('.series-index__link')];
+check('index links to every series', links.length === GALLERIES.length && links.every((a, i) => a.getAttribute('href') === `#${GALLERIES[i].id}`));
+check('index thumbnails are decorative', [...document.querySelectorAll('.series-index img')].every((i) => i.getAttribute('alt') === ''));
+const empty = GALLERIES.filter((g) => g.photos.length === 0);
+check(
+  'empty series hold blank slots',
+  empty.every((g) => document.getElementById(g.id)?.querySelectorAll('.grid .blank').length > 0 && !document.getElementById(g.id)?.querySelector('.tile')),
+  empty.map((g) => g.title).join(', ') || 'none empty',
+);
+check('footer present', !!document.querySelector('.footer'));
 
 console.log('\nimage markup');
 const imgs = [...document.querySelectorAll('.tile img')];

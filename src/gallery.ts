@@ -124,99 +124,60 @@ function renderContact(): void {
   }
 }
 
-/** Grids that need re-justifying when the window changes width. */
-const layouts: { grid: HTMLElement; tiles: { photo: Photo; el: HTMLElement }[] }[] = [];
-
-/** Below this width the grid becomes a single full-width column. */
-const SINGLE_COLUMN_BELOW = 640;
+/** Blank slots shown in a series that has no photos yet. */
+const EMPTY_SLOTS = 3;
 
 /**
- * Justified rows, the layout photo sites use: greedily fill a row until scaling
- * it to the container width would make it shorter than the target height, then
- * commit it. Every photo in a row ends up the same height, and the row fills the
- * width exactly — so nothing is cropped and no gaps are left over.
+ * The row of links under the header: each series name above one hand-picked
+ * photo from it. They jump to the section; they do not open the lightbox.
  */
-function justify(grid: HTMLElement, tiles: { photo: Photo; el: HTMLElement }[]): void {
-  const width = grid.clientWidth;
-  if (width === 0 || tiles.length === 0) return; // not laid out yet (or jsdom)
+function renderIndex(): void {
+  const mount = document.querySelector<HTMLElement>('[data-index]');
+  if (!mount) return;
 
-  const gap = parseFloat(getComputedStyle(grid).getPropertyValue('gap')) || 16;
-  const single = width < SINGLE_COLUMN_BELOW;
-  grid.classList.toggle('grid--single', single);
-
-  if (single) {
-    for (const { el } of tiles) {
-      el.style.width = '';
-      el.style.height = '';
-    }
-    grid.replaceChildren(...tiles.map((t) => t.el));
+  // A single series has nothing to navigate between.
+  if (GALLERIES.length < 2) {
+    mount.remove();
     return;
   }
 
-  const target = width < 900 ? 260 : 300;
-  const rows: { photo: Photo; el: HTMLElement }[][] = [];
-  let row: { photo: Photo; el: HTMLElement }[] = [];
-  let aspectSum = 0;
+  for (const gallery of GALLERIES) {
+    const cover = gallery.photos.find((p) => p.file === gallery.cover) ?? gallery.photos[0];
 
-  for (const tile of tiles) {
-    row.push(tile);
-    aspectSum += tile.photo.w / tile.photo.h;
+    const link = el('a', 'series-index__link');
+    link.href = `#${gallery.id}`;
 
-    // Height this row would take if stretched to fill the container.
-    const height = (width - gap * (row.length - 1)) / aspectSum;
-    if (height <= target) {
-      rows.push(row);
-      row = [];
-      aspectSum = 0;
-    }
+    const label = el('span', 'series-index__label');
+    label.textContent = gallery.title;
+
+    // Decorative: the label already names where the link goes. No photos yet
+    // means a blank block of the same size.
+    const thumb = cover ? picture({ ...cover, alt: '' }, THUMB, false) : el('span', 'blank');
+    link.append(label, thumb);
+    mount.append(link);
   }
-  if (row.length) rows.push(row);
-
-  const fragment = document.createDocumentFragment();
-  for (const [index, items] of rows.entries()) {
-    const sum = items.reduce((n, t) => n + t.photo.w / t.photo.h, 0);
-    const available = width - gap * (items.length - 1);
-    // A trailing partial row is left at the target height rather than blown up
-    // to fill the width, which would make one or two photos enormous.
-    const height = index === rows.length - 1 ? Math.min(target, available / sum) : available / sum;
-
-    const rowEl = el('div', 'grid__row');
-    for (const { photo, el: tile } of items) {
-      tile.style.width = `${(height * photo.w) / photo.h}px`;
-      tile.style.height = `${height}px`;
-      rowEl.append(tile);
-    }
-    fragment.append(rowEl);
-  }
-
-  grid.replaceChildren(fragment);
-}
-
-function layoutAll(): void {
-  for (const { grid, tiles } of layouts) justify(grid, tiles);
 }
 
 function renderGalleries(): void {
   const mount = document.querySelector<HTMLElement>('[data-galleries]');
   if (!mount) return;
 
-  const populated = GALLERIES.filter((g) => g.photos.length > 0);
-  // A single gallery needs no heading to distinguish it from anything else.
-  const showTitles = populated.length > 1;
-
-  for (const gallery of populated) {
+  for (const gallery of GALLERIES) {
     const section = el('section', 'gallery');
     section.id = gallery.id;
 
-    if (showTitles) {
-      const h = el('h2', 'gallery__title');
-      h.textContent = gallery.title;
-      section.append(h);
+    const head = el('div', 'gallery__head');
+    const h = el('h2', 'gallery__title');
+    h.textContent = gallery.title;
+    head.append(h);
+    if (gallery.year) {
+      const year = el('span', 'gallery__year');
+      year.textContent = gallery.year;
+      head.append(year);
     }
+    section.append(head);
 
     const grid = el('div', 'grid');
-    const tiles: { photo: Photo; el: HTMLElement }[] = [];
-
     for (const photo of gallery.photos) {
       const index = sequence.push(photo) - 1;
 
@@ -227,10 +188,18 @@ function renderGalleries(): void {
       button.append(picture(photo, THUMB, false));
 
       grid.append(button);
-      tiles.push({ photo, el: button });
     }
 
-    layouts.push({ grid, tiles });
+    // Nothing to show yet: hold the space with blank slots, hidden from screen
+    // readers, until photos are added.
+    if (gallery.photos.length === 0) {
+      for (let i = 0; i < EMPTY_SLOTS; i++) {
+        const slot = el('div', 'blank');
+        slot.setAttribute('aria-hidden', 'true');
+        grid.append(slot);
+      }
+    }
+
     section.append(grid);
     mount.append(section);
   }
@@ -349,17 +318,8 @@ function init(): void {
   renderProfile();
   renderAbout();
   renderContact();
+  renderIndex();
   renderGalleries();
-  layoutAll();
-
-  // Row composition depends on the container width, so it has to be redone when
-  // that changes. rAF-throttled to stay smooth while dragging a window edge.
-  let pending = 0;
-  window.addEventListener('resize', () => {
-    cancelAnimationFrame(pending);
-    pending = requestAnimationFrame(layoutAll);
-  });
-
 
   const root = document.querySelector<HTMLElement>('[data-lightbox]');
   if (!root) return;

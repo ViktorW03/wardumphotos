@@ -23,47 +23,35 @@ js/                 compiled output — this is what the browser loads
 | `npm test` | headless checks against the rendered page |
 | `./build-images.sh` | regenerate `images/` from `originals/` |
 
-## Reordering photos
+## Series
 
-Open `src/content.ts`. The gallery is a list, and **list order is display order** —
-move a line up to move a photo earlier:
+The page is split into series — San Francisco, Alcatraz, Stanford-Palo Alto,
+Reykjavik — each its own section, with a row of links under your name that
+jump to them. They all live in `GALLERIES` in `src/content.ts`:
 
 ```ts
-photos: [
-  { file: 'DSC00118', w: 2000, h: 1337, alt: 'Four people walking a tree-lined path' },
-  { file: 'DSC00582', w: 1337, h: 2000, alt: 'The glass dome of a conservatory' },
-  ...
-]
+{
+  id: 'alcatraz',          // the #anchor the index links to
+  title: 'Alcatraz',       // heading and index label
+  year: '2026',            // right-hand side of the heading
+  cover: 'DSC01423',       // photo shown in the index link (defaults to the first)
+  photos: [
+    { file: 'DSC01423', w: 1333, h: 2000, alt: 'A weathered concrete lighthouse…' },
+    ...
+  ],
+},
 ```
 
-Then `npm run build` and refresh.
+**List order is display order**, for series and for photos within them. Move a
+line up to move a photo earlier. The lightbox steps through every series top to
+bottom in the same order.
 
-The grid fills left to right, so the order in the file is the order on screen:
+A series with no photos yet (Reykjavik) shows blank grey slots until you add
+some. To add a new series, copy a block and give it a new `id` and `title`.
 
-```
- ┌─────┐ ┌─────┐ ┌─────┐
- │  1  │ │  2  │ │  3  │
- └─────┘ └─────┘ └─────┘
- ┌─────┐ ┌─────┐ ┌─────┐
- │  4  │ │  5  │ │  6  │
- └─────┘ └─────┘ └─────┘
-```
-
-Three columns on desktop, two on tablets, one on phones. The lightbox steps
-through in the same order.
-
-**Thumbnails are cropped.** Rows only line up if every tile is the same shape, so
-grid thumbnails are cropped to `--tile-ratio` in `styles.css` — square by
-default. Change it there to reshape every tile at once:
-
-```css
---tile-ratio: 1;     /* square */
---tile-ratio: 3/2;   /* wide */
---tile-ratio: 4/5;   /* tall */
-```
-
-Cropping only affects the grid. The lightbox always shows the full uncropped
-frame.
+Photos keep their own shape in the grid — nothing is cropped. The grid is one
+column on phones and three to four on desktop; tiles in a row share a bottom
+edge.
 
 ## Adding photos
 
@@ -85,7 +73,7 @@ frame.
    { file: 'DSC00614', w: 1337, h: 2000, alt: '' },
    ```
 
-4. Paste it into the `photos` array in `src/content.ts`, at the position you want
+4. Paste it into the right series' `photos` array in `src/content.ts`, at the position you want
    it to appear, and **write the alt text**. Describe what's in the frame, not
    that it's a photo:
 
@@ -106,26 +94,6 @@ frame.
 
 Delete its line from `src/content.ts` and `npm run build`. The file stays in
 `originals/` and `images/` — nothing is destroyed, it just stops being shown.
-
-## Adding the portraits section
-
-`src/content.ts` already has an empty `portraits` gallery. It renders **nothing**
-while empty — no heading, no placeholder, no hint that it exists.
-
-Add entries to it the same way as above. Both sections then get their headings
-automatically:
-
-```ts
-{
-  id: 'portraits',
-  title: 'Portraits',
-  photos: [
-    { file: 'DSC00614', w: 1337, h: 2000, alt: '...' },
-  ],
-},
-```
-
-Get permission from anyone recognisable before publishing their photo.
 
 ## Changing the hero
 

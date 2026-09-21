@@ -12,10 +12,16 @@ export interface Photo {
   readonly alt: string;
 }
 
+/** One series: a section on the page and a link in the index above it. */
 export interface Gallery {
+  /** Anchor the index links to, e.g. "alcatraz" → #alcatraz. */
   readonly id: string;
-  /** Heading text. Only shown when more than one gallery has photos in it. */
+  /** Section heading and index label. */
   readonly title: string;
+  /** Optional. Shown to the right of the heading. */
+  readonly year?: string;
+  /** Optional. File of the photo shown in the index link; defaults to the first. */
+  readonly cover?: string;
   readonly photos: readonly Photo[];
 }
 
