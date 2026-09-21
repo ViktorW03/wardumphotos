@@ -9,7 +9,7 @@ export const TEXT: SiteText = {
   name: 'Viktor Wardum',
   tagline: 'Photography — Reykjavik',
   instagram: 'wardumphotos',
-  email: 'viktorwardum@gmail.com',
+  email: 'viktor@wardumphotos.is',
 };
 
 // The picture of you above the gallery. Shown small and uncropped, at whatever
