@@ -12,6 +12,7 @@ mkdir -p "$DIST"
 cp index.html styles.css "$DIST/"
 cp -R js "$DIST/js"
 cp -R images "$DIST/images"
+cp -R fonts "$DIST/fonts"
 
 # Source maps are a development aid; no reason to ship them.
 find "$DIST/js" -name '*.map' -delete
