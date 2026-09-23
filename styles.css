@@ -1,3 +1,11 @@
+@font-face {
+  font-family: "Moret";
+  src: url("fonts/Moret-RegularOblique.otf") format("opentype");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
 :root {
   --bg: #ffffff;
   --fg: #14161a;
@@ -9,6 +17,7 @@
   --page: 1040px;   /* the site never runs wider than this */
   --pad: clamp(1.25rem, 4vw, 2.5rem);
   --portrait: clamp(120px, 22vw, 168px);   /* width of the picture of you */
+  --font-display: "Moret", ui-sans-serif, -apple-system, "Segoe UI", Inter, Helvetica, Arial, sans-serif;
 }
 
 *,
@@ -99,8 +108,10 @@ a:hover {
 
 .profile__name {
   margin: 1.1rem 0 0;
+  font-family: var(--font-display);
+  font-style: italic;
   font-size: clamp(1.5rem, 4vw, 1.9rem);
-  font-weight: 600;
+  font-weight: 400;
   letter-spacing: -0.02em;
   line-height: 1.15;
 }
@@ -187,10 +198,12 @@ a:hover {
 .series-index__label {
   display: block;
   margin-bottom: 0.5rem;
-  font-size: 0.72rem;
-  font-weight: 600;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 0.85rem;
+  font-weight: 400;
   text-transform: uppercase;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.06em;
   color: var(--fg);
 }
 
@@ -222,10 +235,12 @@ a:hover {
 
 .gallery__title {
   margin: 0;
-  font-size: 0.72rem;
-  font-weight: 600;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 0.85rem;
+  font-weight: 400;
   text-transform: uppercase;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.06em;
   color: var(--fg);
 }
 
