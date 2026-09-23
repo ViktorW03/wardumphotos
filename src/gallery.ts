@@ -43,6 +43,37 @@ function picture(photo: Photo, dir: string, eager: boolean): HTMLPictureElement 
   return pic;
 }
 
+/** Long edge of the images/thumb and images/full derivatives (see build-images.sh). */
+const THUMB_EDGE = 900;
+const FULL_EDGE = 2000;
+
+/**
+ * Grid tiles offer both the thumbnail and the full-size file, with their real
+ * pixel widths, and let the browser pick. On a retina screen or a phone showing
+ * one photo per row, the thumbnail is too small and would look soft, so the
+ * browser fetches the sharper file instead. `sizes` is kept in step with the
+ * tile's actual width by the layout code.
+ */
+function tilePicture(photo: Photo): HTMLPictureElement {
+  const pic = picture(photo, THUMB, false);
+  const long = Math.max(photo.w, photo.h);
+  const thumbW = Math.round((photo.w * Math.min(THUMB_EDGE, long)) / long);
+  const fullW = Math.round((photo.w * Math.min(FULL_EDGE, long)) / long);
+  const set = (ext: string) =>
+    `${THUMB}/${photo.file}.${ext} ${thumbW}w, ${FULL}/${photo.file}.${ext} ${fullW}w`;
+
+  const source = pic.querySelector('source');
+  const img = pic.querySelector('img');
+  if (source) source.srcset = set('webp');
+  if (img) img.srcset = set('jpg');
+  setSizes(pic, `(max-width: ${SINGLE_COLUMN_BELOW}px) 100vw, 400px`);
+  return pic;
+}
+
+function setSizes(root: ParentNode, sizes: string): void {
+  for (const node of root.querySelectorAll('source, img')) node.setAttribute('sizes', sizes);
+}
+
 function renderProfile(): void {
   const mount = document.querySelector<HTMLElement>('[data-avatar]');
   if (mount) mount.append(picture(PROFILE, THUMB, true));
@@ -127,6 +158,84 @@ function renderContact(): void {
 /** Blank slots shown in a series that has no photos yet. */
 const EMPTY_SLOTS = 3;
 
+type Tile = { photo: Photo; el: HTMLElement };
+
+/** Grids that need re-justifying when the window changes width. */
+const layouts: { grid: HTMLElement; tiles: Tile[] }[] = [];
+
+/** Below this width the grid becomes a single full-width column. */
+const SINGLE_COLUMN_BELOW = 640;
+
+/**
+ * Justified rows: greedily fill a row until scaling it to the container width
+ * would make it shorter than the target height, then commit it. Every photo in
+ * a row ends up the same height and the row fills the width exactly, so
+ * horizontal and vertical photos sit side by side with no gaps and nothing is
+ * cropped.
+ */
+function justify(grid: HTMLElement, tiles: Tile[]): void {
+  const width = grid.clientWidth;
+  if (width === 0 || tiles.length === 0) return; // not laid out yet (or jsdom)
+
+  const gap = parseFloat(getComputedStyle(grid).getPropertyValue('column-gap')) || 16;
+  const single = width < SINGLE_COLUMN_BELOW;
+  grid.classList.toggle('grid--single', single);
+
+  if (single) {
+    for (const { el } of tiles) {
+      el.style.width = '';
+      el.style.height = '';
+      setSizes(el, `${width}px`);
+    }
+    grid.replaceChildren(...tiles.map((t) => t.el));
+    return;
+  }
+
+  const target = width < 900 ? 260 : 300;
+  const rows: Tile[][] = [];
+  let row: Tile[] = [];
+  let aspectSum = 0;
+
+  for (const tile of tiles) {
+    row.push(tile);
+    aspectSum += tile.photo.w / tile.photo.h;
+
+    // Height this row would take if stretched to fill the container.
+    const height = (width - gap * (row.length - 1)) / aspectSum;
+    if (height <= target) {
+      rows.push(row);
+      row = [];
+      aspectSum = 0;
+    }
+  }
+  if (row.length) rows.push(row);
+
+  const fragment = document.createDocumentFragment();
+  for (const [index, items] of rows.entries()) {
+    const sum = items.reduce((n, t) => n + t.photo.w / t.photo.h, 0);
+    const available = width - gap * (items.length - 1);
+    // A trailing partial row stays at the target height rather than being blown
+    // up to fill the width, which would make one or two photos enormous.
+    const height = index === rows.length - 1 ? Math.min(target, available / sum) : available / sum;
+
+    const rowEl = el('div', 'grid__row');
+    for (const { photo, el: tile } of items) {
+      const tileWidth = (height * photo.w) / photo.h;
+      tile.style.width = `${tileWidth}px`;
+      setSizes(tile, `${Math.ceil(tileWidth)}px`);
+      tile.style.height = `${height}px`;
+      rowEl.append(tile);
+    }
+    fragment.append(rowEl);
+  }
+
+  grid.replaceChildren(fragment);
+}
+
+function layoutAll(): void {
+  for (const { grid, tiles } of layouts) justify(grid, tiles);
+}
+
 /**
  * The row of links under the header: each series name above one hand-picked
  * photo from it. They jump to the section; they do not open the lightbox.
@@ -178,6 +287,7 @@ function renderGalleries(): void {
     section.append(head);
 
     const grid = el('div', 'grid');
+    const tiles: Tile[] = [];
     for (const photo of gallery.photos) {
       const index = sequence.push(photo) - 1;
 
@@ -185,14 +295,17 @@ function renderGalleries(): void {
       button.type = 'button';
       button.setAttribute('aria-label', `Enlarge: ${photo.alt}`);
       button.dataset['index'] = String(index);
-      button.append(picture(photo, THUMB, false));
+      button.append(tilePicture(photo));
 
       grid.append(button);
+      tiles.push({ photo, el: button });
     }
+    if (tiles.length) layouts.push({ grid, tiles });
 
     // Nothing to show yet: hold the space with blank slots, hidden from screen
     // readers, until photos are added.
     if (gallery.photos.length === 0) {
+      grid.classList.add('grid--blank');
       for (let i = 0; i < EMPTY_SLOTS; i++) {
         const slot = el('div', 'blank');
         slot.setAttribute('aria-hidden', 'true');
@@ -320,6 +433,15 @@ function init(): void {
   renderContact();
   renderIndex();
   renderGalleries();
+  layoutAll();
+
+  // Row composition depends on the container width, so it has to be redone when
+  // that changes. rAF-throttled to stay smooth while dragging a window edge.
+  let pending = 0;
+  window.addEventListener('resize', () => {
+    cancelAnimationFrame(pending);
+    pending = requestAnimationFrame(layoutAll);
+  });
 
   const root = document.querySelector<HTMLElement>('[data-lightbox]');
   if (!root) return;

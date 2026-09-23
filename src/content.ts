@@ -7,16 +7,16 @@ import type { Gallery, Photo, SiteText } from './types.js';
 
 export const TEXT: SiteText = {
   name: 'Viktor Wardum',
-  tagline: 'Photography — Reykjavik',
+  tagline: 'Photography - Reykjavik',
   instagram: 'wardumphotos',
   email: 'viktor@wardumphotos.is',
 };
 
 // The picture of you above the gallery. Shown small and uncropped, at whatever
-// aspect ratio the photo already has — it is not squared off or masked.
+// aspect ratio the photo already has - it is not squared off or masked.
 // Any file in images/thumb works; swap the name and dimensions to change it.
 //
-// If you change this, also update the og:image meta tag in index.html — it has
+// If you change this, also update the og:image meta tag in index.html - it has
 // to be spelled out in the HTML to drive link previews.
 export const PROFILE: Photo = {
   file: 'DSC00233',
@@ -29,8 +29,8 @@ export const PROFILE: Photo = {
 // in the index under your name. Photos are listed in display order; the
 // lightbox steps through every series top to bottom.
 //
-//   cover  — the photo shown in the index link. Leave it out to use the first.
-//   year   — shown on the right of the section heading.
+//   cover  - the photo shown in the index link. Leave it out to use the first.
+//   year   - shown on the right of the section heading.
 //
 // A series with no photos yet shows blank grey slots in their place.
 export const GALLERIES: readonly Gallery[] = [

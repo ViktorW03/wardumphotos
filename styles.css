@@ -236,19 +236,27 @@ a:hover {
   color: var(--muted);
 }
 
-/* One column on phones, three to four on desktop. Photos keep their own
-   shape — nothing is cropped — and tiles of unequal height share a bottom
-   edge within each row. */
+/* Justified rows. Widths and heights are set per tile by gallery.ts: every photo
+   in a row shares a height and the row fills the width exactly, so horizontal
+   and vertical photos sit side by side with no gaps and nothing cropped. The
+   gap here is what the layout code measures — keep it in px. */
 .grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
   gap: var(--gap);
-  align-items: end;
+}
+
+.grid__row {
+  display: flex;
+  gap: var(--gap);
+  margin-bottom: var(--gap);
+}
+
+.grid__row:last-child {
+  margin-bottom: 0;
 }
 
 .tile {
   display: block;
-  width: 100%;
+  flex: 0 0 auto;
   margin: 0;
   padding: 0;
   border: 0;
@@ -261,8 +269,24 @@ a:hover {
 
 .tile img {
   width: 100%;
-  height: auto;
+  height: 100%;
+  object-fit: cover;
   transition: opacity 0.2s ease;
+}
+
+/* Narrow screens: one photo per row at its natural height. */
+.grid--single .tile {
+  width: 100%;
+  height: auto;
+  margin-bottom: var(--gap);
+}
+
+.grid--single .tile:last-child {
+  margin-bottom: 0;
+}
+
+.grid--single .tile img {
+  height: auto;
 }
 
 @media (hover: hover) {
@@ -271,8 +295,13 @@ a:hover {
   }
 }
 
-/* A slot waiting for a photo. */
-.grid .blank {
+/* A series with no photos yet: a plain grid of blank slots. */
+.grid--blank {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+}
+
+.grid--blank .blank {
   aspect-ratio: 3 / 2;
   border-radius: 3px;
   background: var(--tile-bg);
