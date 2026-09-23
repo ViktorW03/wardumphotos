@@ -4,7 +4,7 @@ import type { Photo } from './types.js';
 const FULL = 'images/full';
 const THUMB = 'images/thumb';
 
-/** Flat list across all galleries — the lightbox steps through this. */
+/** Flat list across all galleries - the lightbox steps through this. */
 const sequence: Photo[] = [];
 
 function el<K extends keyof HTMLElementTagNameMap>(
@@ -33,7 +33,7 @@ function picture(photo: Photo, dir: string, eager: boolean): HTMLPictureElement 
   img.alt = photo.alt;
   img.width = photo.w;
   img.height = photo.h;
-  // Set as attributes rather than properties — `fetchpriority` in particular is
+  // Set as attributes rather than properties - `fetchpriority` in particular is
   // not reflected consistently across engines.
   img.setAttribute('decoding', 'async');
   img.setAttribute('loading', eager ? 'eager' : 'lazy');
